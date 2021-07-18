@@ -43,8 +43,8 @@ namespace FundooApplication
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<UsersContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("UserDB")));
-            services.AddScoped<IUserRL, UserRL>();
-            services.AddScoped<IUserBL, UserBL>();
+            services.AddTransient<IUserRL, UserRL>();
+            services.AddTransient<IUserBL, UserBL>();
             services.AddTransient<INoteRL, NoteRL>();
             services.AddTransient<INoteBL, NoteBL>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

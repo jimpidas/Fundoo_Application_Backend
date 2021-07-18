@@ -22,7 +22,7 @@ namespace FundooApplication.Controllers
             this.noteBL = noteBL;
         }
         [Authorize]
-        [HttpPost("AddNote")]
+        [HttpPost]
 
         public IActionResult AddUserNote(AddNote Note)
         {
@@ -33,8 +33,8 @@ namespace FundooApplication.Controllers
                 {
                     IEnumerable<Claim> claims = identity.Claims;
                     int UserID = Convert.ToInt32(claims.Where(p => p.Type == "UserModelID").FirstOrDefault()?.Value);
-                    Note.UserModelID = UserID;
-                    NoteResponse result = noteBL.AddNote(Note);
+                    //Note.UserModelID = UserID;
+                    NoteResponse result = noteBL.AddNote(Note, UserID);
                     return Ok(new { success = true, Note = result });
                 }
                 return BadRequest(new { success = false, Message = "no user is active please login" });
@@ -47,7 +47,7 @@ namespace FundooApplication.Controllers
 
 
         [AllowAnonymous]
-        [HttpGet("Get")]
+        [HttpGet]
         public ActionResult GetAllNotes(int UserId)
         {
             var result = this.noteBL.GetAllNotes(UserId);
@@ -57,7 +57,7 @@ namespace FundooApplication.Controllers
 
 
         [Authorize]
-        [HttpDelete("Delete/{NoteID}")]
+        [HttpDelete("{NoteID}")]
         public IActionResult DeleteNote(int NoteID)
         {
             try
@@ -69,7 +69,7 @@ namespace FundooApplication.Controllers
                     int UserID = Convert.ToInt32(claims.Where(p => p.Type == "UserModelID").FirstOrDefault()?.Value);
                     string Email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
 
-                    bool result = noteBL.DeleteNote(NoteID);
+                    bool result = this.noteBL.DeleteNote(NoteID);
                     return Ok(new { success = true, user = Email, Notes = result });
                 }
                 return BadRequest(new { success = false, Message = "no user is active please login" });
@@ -79,5 +79,20 @@ namespace FundooApplication.Controllers
                 return BadRequest(new { success = false, exception.Message });
             }
         }
+
+        [HttpPut("Title/{NoteID}")]
+        public IActionResult UpdateTitle(int NoteID, NoteTitle noteTitle)
+        {
+            try
+            {
+                this.noteBL.UpdateTitle(NoteID, noteTitle.Title);
+                return Ok(new { succes = true, message=$"Title updated successfully" });
+            }
+            catch(Exception)
+            {
+                return BadRequest(new { success = false, message = $"Update fail" });
+            }
+        }
+
     }
 }

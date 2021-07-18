@@ -6,7 +6,6 @@ namespace CommonLayer.RequestModel
 {
     public  class AddNote
     {
-        public int UserModelID { get; set; }
         public string Title { get; set; }
         public string Body { get; set; }
         public DateTime Reminder { get; set; }

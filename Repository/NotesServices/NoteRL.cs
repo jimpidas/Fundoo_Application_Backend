@@ -20,16 +20,17 @@ namespace Repository.NotesServices
             _usersContext = usersContext;
         }
 
-        public NoteResponse AddNote(AddNote note)
+        public NoteResponse AddNote(AddNote note,int UserID)
         {
             try
             {
-                var user = _usersContext.Users.FirstOrDefault(e => e.UserModelID == note.UserModelID);
+                
+                var user = _usersContext.Users.FirstOrDefault(e => e.UserModelID == UserID);
                 if (user != null)
                 {
-                    Note Addnotes = new Note
+                    var Addnotes = new Note
                     {
-                        //UserModelID = note.UserModelID,
+                        UserModelID = UserID,
                         Title = note.Title,
                         Body = note.Body,
                         Reminder = note.Reminder,
@@ -39,13 +40,13 @@ namespace Repository.NotesServices
                         IsPin = note.IsPin,
                         CreatedDate = note.CreatedDate,
                         ModifiedDate = note.ModifiedDate,
-                        //User = user
+                       
                     };
 
                     _usersContext.Notes.Add(Addnotes);
                     _usersContext.SaveChanges();
 
-                    NoteResponse noteResponseData = new NoteResponse()
+                    var noteResponseData = new NoteResponse
                     {
                         NotesId = Addnotes.NotesId,
                         UserModelID=Addnotes.UserModelID,
@@ -88,11 +89,11 @@ namespace Repository.NotesServices
                 throw new Exception(e.Message);
             }
         }
-        public bool DeleteNote(int noteID)
+        public bool DeleteNote(int UserID,int noteID)
         {
             try
             {
-                if (_usersContext.Notes.Any(n => n.NotesId == noteID))
+                if (_usersContext.Notes.Any(n => n.NotesId == noteID && n.UserModelID==UserID))
                 {
                     var note = _usersContext.Notes.Find(noteID);
                     if (note.IsTrash)
@@ -115,5 +116,29 @@ namespace Repository.NotesServices
                 throw;
             }
         }
-    }
+
+        public void UpdateTitle(int nodeID, string title)
+        {
+            try
+            {
+                var result = _usersContext.Notes.FirstOrDefault(e => e.NotesId == nodeID);
+                if(result != null)
+                {
+                    result.Title = title;
+                    _usersContext.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("Note ID doesn't exits");
+                }
+
+            }
+            catch(Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        
+    }   
 }

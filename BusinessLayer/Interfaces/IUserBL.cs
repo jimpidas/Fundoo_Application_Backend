@@ -9,10 +9,10 @@ namespace BusinessLayer.Interfaces
 {
     public interface IUserBL
     {
-       
         public ResponseUserAccount RegisterUser(RegisterUserRequest user);
 
         public ResponseUserAccount AthenticateUser(LoginRequestModel loginUser);
+
         bool SendForgottenPasswordLink(ForgetPasswordModel forgetPasswordModel);
     }
 }

@@ -18,11 +18,11 @@ namespace BusinessLayer.NotesServices
             this.noteRL = noteRL;
         }
 
-        public NoteResponse AddNote(AddNote note)
+        public NoteResponse AddNote(AddNote note, int UserID)
         {
             try
             {
-                return this.noteRL.AddNote(note);
+                return this.noteRL.AddNote(note, UserID);
             }
             catch (Exception e)
             {
@@ -40,16 +40,27 @@ namespace BusinessLayer.NotesServices
                 throw new Exception(e.Message);
             }
         }
-        public bool DeleteNote(int noteID)
+        public bool DeleteNote(int UserID,int noteID)
         {
             try
             {
-                bool result = noteRL.DeleteNote(noteID);
+                bool result = noteRL.DeleteNote(UserID, noteID);
                 return result;
             }
             catch (Exception)
             {
                 throw;
+            }
+        }
+        public void UpdateTitle(int nodeID, string title)
+        {
+            try
+            {
+                this.noteRL.UpdateTitle( nodeID, title);
+            }
+            catch(Exception e)
+            {
+                throw new Exception(e.Message);
             }
         }
     }

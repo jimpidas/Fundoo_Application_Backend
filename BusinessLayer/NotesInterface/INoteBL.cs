@@ -9,8 +9,10 @@ namespace BusinessLayer.NotesInterface
 {
     public interface INoteBL
     {
-        NoteResponse AddNote(AddNote note);
+        NoteResponse AddNote(AddNote note, int UserID);
         List<Note> GetAllNotes(int UserId);
         bool DeleteNote(int noteID);
+
+        void UpdateTitle(int nodeID, string title);
     }
 }

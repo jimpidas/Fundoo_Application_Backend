@@ -23,7 +23,7 @@ namespace CommonLayer.DatabaseModel
         public DateTime ModifiedDate { get; set; }
        
         public int UserModelID { get; set; }
-        public UserModel User { get; set; }
+        public virtual UserModel User { get; set; }
       
     }
 }

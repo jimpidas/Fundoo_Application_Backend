@@ -64,6 +64,7 @@ namespace Repository.Services
                 string Password = passwordEncryption.CalculateHash(loginUser.Password);
                 if (_userContext.Users.FirstOrDefault(u => u.Email == loginUser.Email).Password.Equals(Password))
                 {
+
                     ResponseUserAccount User = _userContext.Users.Where(u => u.Email == loginUser.Email).
                         Select(u => new ResponseUserAccount
                         {
@@ -71,7 +72,7 @@ namespace Repository.Services
                             FirstName = u.FirstName,
                             LastName = u.LastName,
                             Email = u.Email,
-                        }).ToList().First();
+                }).ToList().First();
                     return User;
                 }
                 else

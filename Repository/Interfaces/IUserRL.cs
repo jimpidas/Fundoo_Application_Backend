@@ -9,10 +9,8 @@ namespace Repository.Interfaces
 {
     public interface IUserRL
     {
-       
         ResponseUserAccount RegisterUser(RegisterUserRequest user);
         ResponseUserAccount AthenticateUser(LoginRequestModel loginUser);
-        bool SendForgottenPasswordLink(ForgetPasswordModel forgetPasswordModel);
-       
+        bool SendForgottenPasswordLink(ForgetPasswordModel forgetPasswordModel); 
     }
 }
