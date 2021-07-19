@@ -18,6 +18,6 @@ namespace CommonLayer.ResponseModel
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
         public int UserModelID { get; set; }
-
+       
     }
 }

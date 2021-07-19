@@ -52,6 +52,18 @@ namespace BusinessLayer.NotesServices
                 throw;
             }
         }
+
+        public NoteResponse UpdateNote(AddNote updateNote, int NotesID)
+        {
+            try
+            {
+               return this.noteRL.UpdateNote(updateNote, NotesID);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
         public void UpdateTitle(int nodeID, string title)
         {
             try
@@ -61,6 +73,118 @@ namespace BusinessLayer.NotesServices
             catch(Exception e)
             {
                 throw new Exception(e.Message);
+            }
+        }
+
+
+        public bool UpdateBody(int userId, int noteId, AddBody addBody)
+        {
+            bool responseData = noteRL.UpdateBody(userId, noteId, addBody);
+            return responseData;
+        }
+        public List<NoteResponse> GetTrashedNotes(int userID)
+        {
+            List<NoteResponse> userTrashedData = noteRL.GetTrashedNotes(userID);
+            return userTrashedData;
+        }
+
+
+        
+
+
+       
+        public bool UpdateColor(int userID, int noteID, ColorRequest color)
+        {
+            bool responseData = noteRL.UpdateColor(userID, noteID, color);
+            return responseData;
+        }
+
+        
+               
+        public void UpdateTrash(int noteId, bool Trash)
+        {
+            try
+            {
+                this.noteRL.UpdateTrash(noteId, Trash);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        
+        public List<NoteResponse> GetArchievedNotes(int userID)
+        {
+            List<NoteResponse> userArchievedData = noteRL.GetArchievedNotes(userID);
+            return userArchievedData;
+        }
+
+       
+        public List<NoteResponse> GetPinnedNotes(int userID)
+        {
+            List<NoteResponse> userNoteResponseData = noteRL.GetPinnedNotes(userID);
+            return userNoteResponseData;
+        }
+
+        public bool RemoveReminder(int userID, int noteID)
+        {
+            try
+            {
+                if (noteID == default)
+                {
+                    throw new Exception("NoteID missing");
+                }
+                return noteRL.RemoveReminder(userID, noteID);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public bool SetNoteReminder(ReminderRequest reminder)
+        {
+            try
+            {
+                if (reminder.Reminder < DateTime.Now)
+                {
+                    throw new Exception("Time is passed");
+                }
+                if (reminder.NotesId == default)
+                {
+                    throw new Exception("NoteID missing");
+                }
+                return noteRL.SetNoteReminder(reminder);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public bool ToggleArchive(int noteID, int userID)
+        {
+            try
+            {
+                return noteRL.ToggleArchive(noteID, userID);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+       
+        public bool ToggleNotePin(int noteID, int userID)
+        {
+            try
+            {
+                return noteRL.ToggleNotePin(noteID, userID);
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

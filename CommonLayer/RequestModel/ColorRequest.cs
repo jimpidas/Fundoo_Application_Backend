@@ -4,8 +4,9 @@ using System.Text;
 
 namespace CommonLayer.RequestModel
 {
-    public class NoteBody
+    public class ColorRequest
     {
-        public string Body { get; set; }
+        public string Color { set; get; }
+
     }
 }

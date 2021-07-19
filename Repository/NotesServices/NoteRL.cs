@@ -52,7 +52,7 @@ namespace Repository.NotesServices
                         UserModelID=Addnotes.UserModelID,
                         Title = Addnotes.Title,
                         Body = Addnotes.Body,
-                        Reminder = Addnotes.Reminder,
+                        Reminder = (DateTime)Addnotes.Reminder,
                         Color = Addnotes.Color,
                         IsPin = Addnotes.IsPin,
                         IsArchived = Addnotes.IsArchived,
@@ -117,6 +117,43 @@ namespace Repository.NotesServices
             }
         }
 
+
+        public NoteResponse UpdateNote(AddNote updateNoteRequest,int NotesID)
+        {
+            try
+            {
+                NoteResponse userNoteResponseData = null;
+                var userData = _usersContext.Notes.FirstOrDefault(u => u.NotesId == NotesID);
+                userData.Title = updateNoteRequest.Title;
+                userData.Body = updateNoteRequest.Body;
+                
+
+
+                userNoteResponseData = new NoteResponse()
+                {
+                    NotesId=userData.NotesId,
+                    UserModelID=userData.UserModelID,
+                    Title = userData.Title,
+                    Body = userData.Body,
+                    Color = userData.Color,
+                    IsPin = userData.IsPin,
+                    IsArchived = userData.IsArchived,
+                    IsTrash = userData.IsTrash,
+                    Reminder= (DateTime)userData.Reminder,
+                    ModifiedDate = DateTime.Now,
+                    CreatedDate=userData.CreatedDate,
+
+                };
+                _usersContext.SaveChanges();
+                return userNoteResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
         public void UpdateTitle(int nodeID, string title)
         {
             try
@@ -139,6 +176,286 @@ namespace Repository.NotesServices
             }
         }
 
+        public List<NoteResponse> GetTrashedNotes(int userID)
+        {
+            try
+            {
+                List<NoteResponse> userNoteLists = _usersContext.Notes.
+                    Where(u => u.UserModelID == userID && u.IsTrash == true).
+                    Select(u => new NoteResponse
+                    {
+                        NotesId = u.NotesId,
+                        Title = u.Title,
+                        Body = u.Body,
+                        Reminder = (DateTime)u.Reminder,
+                        Color = u.Color,
+                        IsPin = u.IsPin,
+                        IsArchived = u.IsArchived,
+                        IsTrash = u.IsTrash,
+                        CreatedDate = u.CreatedDate,
+                        ModifiedDate = u.ModifiedDate
+
+                    }).
+                    ToList();
+
+                if (userNoteLists == null)
+                {
+                    return null;
+                }
+                return userNoteLists;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public bool UpdateBody(int userId, int noteId, AddBody addBody)
+        {
+            try
+            {
+                var userData = _usersContext.Notes.FirstOrDefault(user => user.UserModelID == userId && user.NotesId == noteId);
+                if (userData != null)
+                {
+                    userData.Body = addBody.Body;
+                    _usersContext.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public bool UpdateReminder(int userID, int noteID, ReminderRequest reminder)
+        {
+            try
+            {
+                var userData = _usersContext.Notes.FirstOrDefault(user => user.UserModelID == userID && user.NotesId == noteID);
+                if (userData != null)
+                {
+                    userData.Reminder = reminder.Reminder;
+                    _usersContext.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+       
+        public bool UpdateColor(int userID, int noteID, ColorRequest color)
+        {
+            try
+            {
+                var userData = _usersContext.Notes.FirstOrDefault(user => user.UserModelID == userID && user.NotesId == noteID);
+                if (userData != null)
+                {
+                    userData.Color = color.Color;
+                    _usersContext.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         
+       
+        public void UpdateTrash(int noteId, bool Trash)
+        {
+            try
+            {
+                var result = _usersContext.Notes.FirstOrDefault(u => u.NotesId == noteId);
+                if (result != null)
+                {
+                    result.IsTrash = Trash;
+                    _usersContext.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("No such NoteId Exist");
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+       
+        
+
+        public List<NoteResponse> GetArchievedNotes(int userID)
+        {
+            try
+            {
+                List<NoteResponse> userNoteLists = _usersContext.Notes.
+                    Where(user => user.UserModelID == userID && user.IsArchived == true).
+                    Select(user => new NoteResponse
+                    {
+                        NotesId = user.NotesId,
+                        Title = user.Title,
+                        Body = user.Body,
+                        Reminder = (DateTime)user.Reminder,
+                        Color = user.Color,
+                        IsPin = user.IsPin,
+                        IsArchived = user.IsArchived,
+                        IsTrash = user.IsTrash,
+                        CreatedDate = user.CreatedDate,
+                        ModifiedDate = user.ModifiedDate
+                    }).
+                    ToList();
+
+                if (userNoteLists == null)
+                {
+                    return null;
+                }
+                return userNoteLists;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+       
+        public List<NoteResponse> GetPinnedNotes(int userID)
+        {
+            try
+            {
+                List<NoteResponse> userNoteLists = _usersContext.Notes.
+                    Where(user => user.UserModelID == userID && user.IsPin == true).
+                    Select(user => new NoteResponse
+                    {
+                        NotesId = user.NotesId,
+                        Title = user.Title,
+                        Body = user.Body,
+                        Reminder = (DateTime)user.Reminder,
+                        Color = user.Color,
+                        IsPin = user.IsPin,
+                        IsArchived = user.IsArchived,
+                        IsTrash = user.IsTrash,
+                        CreatedDate = user.CreatedDate,
+                        ModifiedDate = user.ModifiedDate
+                    }).
+                    ToList();
+
+                if (userNoteLists == null)
+                {
+                    return null;
+                }
+                return userNoteLists;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public bool SetNoteReminder(ReminderRequest reminder)
+        {
+            try
+            {
+                _usersContext.Notes.FirstOrDefault(
+                    N => N.NotesId == reminder.NotesId && N.UserModelID == reminder.UserModelID).Reminder = reminder.Reminder;
+                _usersContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
+        public bool RemoveReminder(int userID, int noteID)
+        {
+            try
+            {
+                if (_usersContext.Notes.Any(N => N.UserModelID == userID && N.NotesId == noteID))
+                {
+                    _usersContext.Notes.FirstOrDefault(N => N.NotesId == noteID).Reminder = null;
+                    _usersContext.SaveChanges();
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return false;
+        }
+        public bool ToggleArchive(int noteID, int userID)
+        {
+            try
+            {
+                var note = _usersContext.Notes.FirstOrDefault(N => N.NotesId == noteID && N.UserModelID == userID);
+                if (note.IsArchived)
+                {
+                    note.IsArchived = false;
+                }
+                else
+                {
+                    note.IsArchived = true;
+                }
+                _usersContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        
+        public bool ToggleNotePin(int noteID, int userID)
+        {
+            try
+            {
+                var note = _usersContext.Notes.FirstOrDefault(N => N.NotesId == noteID && N.UserModelID == userID);
+                if (note.IsPin)
+                {
+                    note.IsPin = false;
+                }
+                else
+                {
+                    note.IsPin = true;
+                }
+                _usersContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }   
 }

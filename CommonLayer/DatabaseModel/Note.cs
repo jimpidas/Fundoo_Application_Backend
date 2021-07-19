@@ -13,7 +13,7 @@ namespace CommonLayer.DatabaseModel
         public int NotesId { get; set; }
         public string Title { get; set; }
         public string Body { get; set; }
-        public DateTime Reminder { get; set; }
+        public DateTime? Reminder { get; set; }
         public string Color { get; set; }
        
         public bool IsArchived { get; set; }
