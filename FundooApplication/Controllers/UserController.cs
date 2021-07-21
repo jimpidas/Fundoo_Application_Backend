@@ -13,7 +13,7 @@ using System.Security.Claims;
 namespace FundooApplication.Controllers
 {
    
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class UserController : Controller
     {

@@ -14,7 +14,10 @@ namespace Repository.Services
         }
         public DbSet<UserModel> Users { get; set; }
         public DbSet<Note> Notes { get; set; }
-       
+        public  DbSet<Label> Labels { get; set; }
+        public  DbSet<NoteLabel> NoteLabels { get; set; }
+
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,6 +58,44 @@ namespace Repository.Services
                 
             });
 
+            modelBuilder.Entity<Label>(entity =>
+            {
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Labels)
+                    .HasForeignKey(d => d.UserModelID)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("LabelsFK_UserID");
+            });
+
+           /* modelBuilder.Entity<NoteLabel>(entity =>
+            {
+                entity.ToTable("NoteLabel");
+
+                entity.Property(e => e.NoteLabelId).HasColumnName("NoteLabelID");
+
+                entity.Property(e => e.LabelId).HasColumnName("LabelId").IsRequired();
+
+                entity.Property(e => e.NotesId).HasColumnName("NotesID").IsRequired();
+
+                entity.Property(e => e.UserModelID).HasColumnName("UserModelID").IsRequired();
+
+                entity.HasOne(d => d.Label)
+                    .WithMany(p => p.NoteLabels)
+                    .HasForeignKey(d => d.LabelId)
+                    .HasConstraintName("NoteLabelFK_LabelID");
+
+                entity.HasOne(d => d.Note)
+                    .WithMany(p => p.NoteLabels)
+                    .HasForeignKey(d => d.NotesId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("NoteLabelFK_NotesID");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.NoteLabels)
+                    .HasForeignKey(d => d.UserModelID)
+                    .HasConstraintName("NoteLabelFK_UserID");
+            });*/
         }
     }
 }

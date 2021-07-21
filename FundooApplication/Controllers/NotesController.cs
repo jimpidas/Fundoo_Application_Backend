@@ -21,9 +21,9 @@ namespace FundooApplication.Controllers
         {
             this.noteBL = noteBL;
         }
+
         [Authorize]
         [HttpPost]
-
         public IActionResult AddUserNote(AddNote Note)
         {
             try
@@ -57,6 +57,28 @@ namespace FundooApplication.Controllers
         }
 
 
+        [HttpGet("ActiveNotes")]
+        public IActionResult GetActiveNotes()
+        {
+            try
+            {
+                if (User.Identity is ClaimsIdentity identity)
+                {
+                    IEnumerable<Claim> claims = identity.Claims;
+                    int UserID = Convert.ToInt32(claims.Where(p => p.Type == "UserModelID").FirstOrDefault()?.Value);
+                    string Email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
+
+                    var result = noteBL.GetActiveNotes(UserID);
+                    return Ok(new { success = true, user = Email, Notes = result });
+                }
+                return BadRequest(new { success = false, Message = "no user is active please login" });
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(new { success = false, exception.InnerException });
+            }
+        }
+
         [Authorize]
         [HttpDelete]
         public IActionResult DeleteNote(int NoteID)
@@ -70,7 +92,7 @@ namespace FundooApplication.Controllers
                     int UserID = Convert.ToInt32(claims.Where(p => p.Type == "UserModelID").FirstOrDefault()?.Value);
                     string Email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
 
-                    bool result = this.noteBL.DeleteNote(UserID,NoteID);
+                    bool result = this.noteBL.DeleteNote(UserID,NoteID).Result;
                     return Ok(new { success = true, user = Email, Notes = result });
                 }
                 return BadRequest(new { success = false, Message = "no user is active please login" });
@@ -106,37 +128,8 @@ namespace FundooApplication.Controllers
             }
         }
 
-        [HttpPut("Title")]
-        public IActionResult UpdateTitle(int NoteID, NoteTitle noteTitle)
-        {
-            try
-            {
-                this.noteBL.UpdateTitle(NoteID, noteTitle.Title);
-                return Ok(new { succes = true, message=$"Title updated successfully" });
-            }
-            catch(Exception)
-            {
-                return BadRequest(new { success = false, message = $"Update fail" });
-            }
-        }
-        
-        [HttpPut("Body")]
-        public ActionResult UpdateBody(int noteId, AddBody addBody)
-        {
-            try
-            {
-                var idClaim = HttpContext.User.Claims.FirstOrDefault(userId => userId.Type.Equals("UserModelID", StringComparison.InvariantCultureIgnoreCase));
-                int userId = Convert.ToInt32(idClaim.Value);
-                this.noteBL.UpdateBody(userId, noteId, addBody);
-                return Ok(new { success = true, message = $"Body Updated Successfully" });
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { success = false, message = $"Update Failed" });
-            }
-        }
 
-
+        [Authorize]
         [HttpPut("Color")]
         public IActionResult UpdateColor(int noteID, ColorRequest color)
         {
@@ -168,7 +161,34 @@ namespace FundooApplication.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("Trash")]
+        public IActionResult GetAllTrashedNotes()
+        {
+            try
+            {
+                var idClaim = HttpContext.User.Claims.FirstOrDefault(userId => userId.Type.Equals("UserModelID", StringComparison.InvariantCultureIgnoreCase));
+                int userId = Convert.ToInt32(idClaim.Value);
+                List<NoteResponse> userNoteResponseDataList = noteBL.GetTrashedNotes(userId);
 
+                if (userNoteResponseDataList != null)
+                {
+                    return Ok(userNoteResponseDataList.ToList());
+                }
+                else
+                {
+
+                    return Ok(new { success = false, message = "No Trashed Notes" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+        }
+
+
+        [Authorize]
         [HttpPut("Trash")]
         public ActionResult UpdateTrash(int noteId, AddTrash UpdateTrash)
         {
@@ -253,6 +273,32 @@ namespace FundooApplication.Controllers
         }
 
         [Authorize]
+        [HttpGet("Pin")]
+        public IActionResult GetPinnedNotes()
+        {
+            try
+            {
+                var idClaim = HttpContext.User.Claims.FirstOrDefault(userId => userId.Type.Equals("UserModelID", StringComparison.InvariantCultureIgnoreCase));
+                int userId = Convert.ToInt32(idClaim.Value);
+                List<NoteResponse> userNoteResponseDataList = noteBL.GetPinnedNotes(userId);
+
+                if (userNoteResponseDataList != null)
+                {
+                    return Ok(userNoteResponseDataList.ToList());
+                }
+                else
+                {
+
+                    return Ok(new { success = false, message = "Not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+        }
+
+        [Authorize]
         [HttpPut("Archive")]
         public IActionResult ToggleArchive(int NoteID)
         {
@@ -273,34 +319,6 @@ namespace FundooApplication.Controllers
                 return BadRequest(new { success = false, exception.Message });
             }
         }
-
-
-        [Authorize]
-        [HttpGet("Trash")]
-        public IActionResult GetAllTrashedNotes()
-        {
-            try
-            {
-                var idClaim = HttpContext.User.Claims.FirstOrDefault(userId => userId.Type.Equals("UserModelID", StringComparison.InvariantCultureIgnoreCase));
-                int userId = Convert.ToInt32(idClaim.Value);
-                List<NoteResponse> userNoteResponseDataList = noteBL.GetTrashedNotes(userId);
-
-                if (userNoteResponseDataList != null)
-                {
-                    return Ok(userNoteResponseDataList.ToList());
-                }
-                else
-                {
-                   
-                    return Ok(new { success=false, message= "No Trashed Notes" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { ex.Message });
-            }
-        }
-
 
         [Authorize]
         [HttpGet("Archieve")]
@@ -329,33 +347,5 @@ namespace FundooApplication.Controllers
                 return BadRequest(new { ex.Message });
             }
         }
-
-
-        [Authorize]
-        [HttpGet("Pin")]
-        public IActionResult GetPinnedNotes()
-        {
-            try
-            {
-                var idClaim = HttpContext.User.Claims.FirstOrDefault(userId => userId.Type.Equals("UserModelID", StringComparison.InvariantCultureIgnoreCase));
-                int userId = Convert.ToInt32(idClaim.Value);
-                List<NoteResponse> userNoteResponseDataList = noteBL.GetPinnedNotes(userId);
-
-                if (userNoteResponseDataList != null)
-                {
-                    return Ok(userNoteResponseDataList.ToList());
-                }
-                else
-                {
-                    
-                    return Ok(new { success=false, message= "Not found" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { ex.Message });
-            }
-        }
-    
     }
 }

@@ -10,8 +10,8 @@ using Repository.Services;
 namespace Repository.Migrations
 {
     [DbContext(typeof(UsersContext))]
-    [Migration("20210714065054_Repository.Services.UsersContextNoteAndUserDB")]
-    partial class RepositoryServicesUsersContextNoteAndUserDB
+    [Migration("20210720034027_Repository.Services.AddedLabelDB")]
+    partial class RepositoryServicesAddedLabelDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,20 +21,45 @@ namespace Repository.Migrations
                 .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("CommonLayer.DatabaseModel.Note", b =>
+            modelBuilder.Entity("CommonLayer.DatabaseModel.Label", b =>
                 {
-                    b.Property<int>("NoteId")
+                    b.Property<int>("LabelId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("BackgroundColor")
+                    b.Property<string>("LabelName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("UserModelID")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsArchive")
+                    b.HasKey("LabelId");
+
+                    b.HasIndex("UserModelID");
+
+                    b.ToTable("Labels");
+                });
+
+            modelBuilder.Entity("CommonLayer.DatabaseModel.Note", b =>
+                {
+                    b.Property<int>("NotesId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Body")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsPin")
@@ -43,47 +68,25 @@ namespace Repository.Migrations
                     b.Property<bool>("IsTrash")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ReminderOn")
+                    b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("Reminder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserModelID")
                         .HasColumnType("int");
 
-                    b.HasKey("NoteId");
+                    b.HasKey("NotesId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserModelID");
 
                     b.ToTable("Notes");
-                });
-
-            modelBuilder.Entity("CommonLayer.DatabaseModel.UserAccount", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("UserAccounts");
                 });
 
             modelBuilder.Entity("CommonLayer.DatabaseModel.UserModel", b =>
@@ -108,31 +111,25 @@ namespace Repository.Migrations
                     b.HasKey("UserModelID");
 
                     b.ToTable("Users");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            UserModelID = 1,
-                            Email = "niha@gmail.com",
-                            FirstName = "Niha",
-                            LastName = "Jain",
-                            Password = "Pass@123"
-                        },
-                        new
-                        {
-                            UserModelID = 2,
-                            Email = "janvi@gmail.com",
-                            FirstName = "Janvi",
-                            LastName = "Kirsten",
-                            Password = "Pass@123"
-                        });
+            modelBuilder.Entity("CommonLayer.DatabaseModel.Label", b =>
+                {
+                    b.HasOne("CommonLayer.DatabaseModel.UserModel", "User")
+                        .WithMany("Labels")
+                        .HasForeignKey("UserModelID")
+                        .HasConstraintName("LabelsFK_UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CommonLayer.DatabaseModel.Note", b =>
                 {
-                    b.HasOne("CommonLayer.DatabaseModel.UserAccount", "User")
+                    b.HasOne("CommonLayer.DatabaseModel.UserModel", "User")
                         .WithMany("Notes")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserModelID")
                         .HasConstraintName("NotesFK_UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -140,8 +137,10 @@ namespace Repository.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CommonLayer.DatabaseModel.UserAccount", b =>
+            modelBuilder.Entity("CommonLayer.DatabaseModel.UserModel", b =>
                 {
+                    b.Navigation("Labels");
+
                     b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618

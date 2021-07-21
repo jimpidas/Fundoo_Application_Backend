@@ -1,21 +1,30 @@
 ﻿using BusinessLayer.NotesInterface;
+using BusinessLayer.RedisCacheService;
 using CommonLayer.DatabaseModel;
 using CommonLayer.RequestModel;
 using CommonLayer.ResponseModel;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using Repository.NotesInterface;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BusinessLayer.NotesServices
 {
     public class NoteBL : INoteBL
     {
         readonly INoteRL noteRL;
+        private readonly IDistributedCache distributedCache;
+        readonly RedisCacheServiceBL redis;
 
-        public NoteBL(INoteRL noteRL)
+        public NoteBL(INoteRL noteRL, IDistributedCache distributedCache)
         {
             this.noteRL = noteRL;
+            this.distributedCache = distributedCache;
+            redis = new RedisCacheServiceBL(this.distributedCache);
         }
 
         public NoteResponse AddNote(AddNote note, int UserID)
@@ -40,10 +49,11 @@ namespace BusinessLayer.NotesServices
                 throw new Exception(e.Message);
             }
         }
-        public bool DeleteNote(int UserID,int noteID)
+        public async Task<bool> DeleteNote(int UserID,int noteID)
         {
             try
             {
+                await redis.RemoveNotesRedisCache(UserID);
                 bool result = noteRL.DeleteNote(UserID, noteID);
                 return result;
             }
@@ -64,43 +74,19 @@ namespace BusinessLayer.NotesServices
                 throw new Exception(e.Message);
             }
         }
-        public void UpdateTitle(int nodeID, string title)
-        {
-            try
-            {
-                this.noteRL.UpdateTitle( nodeID, title);
-            }
-            catch(Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-        }
-
-
-        public bool UpdateBody(int userId, int noteId, AddBody addBody)
-        {
-            bool responseData = noteRL.UpdateBody(userId, noteId, addBody);
-            return responseData;
-        }
+       
         public List<NoteResponse> GetTrashedNotes(int userID)
         {
             List<NoteResponse> userTrashedData = noteRL.GetTrashedNotes(userID);
             return userTrashedData;
         }
-
-
-        
-
-
-       
         public bool UpdateColor(int userID, int noteID, ColorRequest color)
         {
             bool responseData = noteRL.UpdateColor(userID, noteID, color);
             return responseData;
-        }
-
+        }  
         
-               
+
         public void UpdateTrash(int noteId, bool Trash)
         {
             try
@@ -144,6 +130,7 @@ namespace BusinessLayer.NotesServices
             }
         }
 
+
         public bool SetNoteReminder(ReminderRequest reminder)
         {
             try
@@ -164,6 +151,8 @@ namespace BusinessLayer.NotesServices
                 throw;
             }
         }
+
+
         public bool ToggleArchive(int noteID, int userID)
         {
             try
@@ -176,11 +165,39 @@ namespace BusinessLayer.NotesServices
             }
         }
        
+
         public bool ToggleNotePin(int noteID, int userID)
         {
             try
             {
                 return noteRL.ToggleNotePin(noteID, userID);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        public async Task<ICollection<NoteResponse>> GetActiveNotes(int UserID)
+        {
+            var cacheKey = UserID.ToString();
+            string serializedNotes;
+            ICollection<NoteResponse> Notes;
+            try
+            {
+                var redisNoteCollection = await distributedCache.GetAsync(cacheKey);
+                if (redisNoteCollection != null)
+                {
+                    serializedNotes = Encoding.UTF8.GetString(redisNoteCollection);
+                    Notes = JsonConvert.DeserializeObject<List<NoteResponse>>(serializedNotes);
+                }
+                else
+                {
+                    Notes = noteRL.GetNotes(UserID, false, false);
+                    await redis.AddNotesRedisCache(cacheKey, Notes);
+                }
+                return Notes;
             }
             catch (Exception)
             {

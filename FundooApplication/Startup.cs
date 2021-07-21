@@ -27,6 +27,8 @@ using BusinessLayer.NotesServices;
 using Microsoft.OpenApi.Models;
 using CommonLayer.RequestModel;
 using CommonLayer.ResponseModel;
+using BusinessLayer.LabelServices;
+using Repository.Services.LabelServices;
 
 namespace FundooApplication
 {
@@ -47,6 +49,8 @@ namespace FundooApplication
             services.AddTransient<IUserBL, UserBL>();
             services.AddTransient<INoteRL, NoteRL>();
             services.AddTransient<INoteBL, NoteBL>();
+            services.AddTransient<LabelBL, LabelBL>();
+            services.AddTransient<LabelRL, LabelRL>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              .AddJwtBearer(options =>
              {
@@ -88,6 +92,11 @@ namespace FundooApplication
                         new string[] { }
                     }
                 });
+            });
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost:6379";
             });
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

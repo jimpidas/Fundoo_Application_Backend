@@ -14,7 +14,8 @@ namespace Repository.NotesServices
     public class NoteRL: INoteRL
     {
         readonly UsersContext _usersContext;
-       
+        ICollection<NoteResponse> noteResponse;
+
         public NoteRL(UsersContext usersContext)
         {
             _usersContext = usersContext;
@@ -89,6 +90,36 @@ namespace Repository.NotesServices
                 throw new Exception(e.Message);
             }
         }
+
+        public ICollection<NoteResponse> GetNotes(int UserID, bool IsTrash, bool IsArchieve)
+        {
+            try
+            {
+                noteResponse = _usersContext.Notes.Where(N => N.UserModelID.Equals(UserID)
+                && N.IsTrash == IsTrash && N.IsArchived == IsArchieve).Select(N =>
+                    new NoteResponse
+                    {
+                        UserModelID = N.UserModelID,
+                        NotesId = N.NotesId,
+                        Title = N.Title,
+                        Body = N.Body,
+                        Reminder = (DateTime)N.Reminder,
+                        Color = N.Color,
+                        IsArchived = N.IsArchived,
+                        IsPin = N.IsPin,
+                        IsTrash = N.IsTrash,
+                       
+                    }
+                    ).ToList();
+                return noteResponse;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
         public bool DeleteNote(int UserID,int noteID)
         {
             try
@@ -127,8 +158,6 @@ namespace Repository.NotesServices
                 userData.Title = updateNoteRequest.Title;
                 userData.Body = updateNoteRequest.Body;
                 
-
-
                 userNoteResponseData = new NoteResponse()
                 {
                     NotesId=userData.NotesId,
@@ -142,7 +171,6 @@ namespace Repository.NotesServices
                     Reminder= (DateTime)userData.Reminder,
                     ModifiedDate = DateTime.Now,
                     CreatedDate=userData.CreatedDate,
-
                 };
                 _usersContext.SaveChanges();
                 return userNoteResponseData;
@@ -153,28 +181,6 @@ namespace Repository.NotesServices
             }
         }
 
-
-        public void UpdateTitle(int nodeID, string title)
-        {
-            try
-            {
-                var result = _usersContext.Notes.FirstOrDefault(e => e.NotesId == nodeID);
-                if(result != null)
-                {
-                    result.Title = title;
-                    _usersContext.SaveChanges();
-                }
-                else
-                {
-                    throw new Exception("Note ID doesn't exits");
-                }
-
-            }
-            catch(Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-        }
 
         public List<NoteResponse> GetTrashedNotes(int userID)
         {
@@ -203,30 +209,6 @@ namespace Repository.NotesServices
                     return null;
                 }
                 return userNoteLists;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-
-        public bool UpdateBody(int userId, int noteId, AddBody addBody)
-        {
-            try
-            {
-                var userData = _usersContext.Notes.FirstOrDefault(user => user.UserModelID == userId && user.NotesId == noteId);
-                if (userData != null)
-                {
-                    userData.Body = addBody.Body;
-                    _usersContext.SaveChanges();
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
             }
             catch (Exception ex)
             {
@@ -283,7 +265,6 @@ namespace Repository.NotesServices
         }
 
         
-       
         public void UpdateTrash(int noteId, bool Trash)
         {
             try
@@ -306,8 +287,6 @@ namespace Repository.NotesServices
         }
 
        
-        
-
         public List<NoteResponse> GetArchievedNotes(int userID)
         {
             try
@@ -342,7 +321,6 @@ namespace Repository.NotesServices
         }
 
 
-       
         public List<NoteResponse> GetPinnedNotes(int userID)
         {
             try

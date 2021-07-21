@@ -15,15 +15,14 @@ namespace CommonLayer.DatabaseModel
         public string Body { get; set; }
         public DateTime? Reminder { get; set; }
         public string Color { get; set; }
-       
         public bool IsArchived { get; set; }
         public bool IsTrash { get; set; }
         public bool IsPin { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
-       
         public int UserModelID { get; set; }
-        public virtual UserModel User { get; set; }
-      
+        public  UserModel User { get; set; }
+        //public  ICollection<NoteLabel> NoteLabels { get; set; }
+
     }
 }
